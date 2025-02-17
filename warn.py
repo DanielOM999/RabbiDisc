@@ -1,16 +1,17 @@
+# Importerer nødvendige bibloteker
 import asyncio
 from bleak import BleakScanner
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
 import subprocess
 
+# Setter opp nødvendige variabler
 TARGET = "90:B1:44:BC:FE:AA"
-
 RSSI_THRESHOLD = -70
 SCAN_INTERVAL = 5
 
+# Setter opp en alert funksjon
 def sendAlert(message):
-    """Sends desktop"""
     subprocess.run([
         "notify-send",
         "Phone Proximity Alert",
@@ -19,9 +20,11 @@ def sendAlert(message):
         "-i", "phone-symbolic"
     ])
 
+# Lager main async funksjonen for å coble til å få rssi til telefonen
 async def main():
     target_found = False
-
+    
+    # Funkjsonen sjekker om enheten er målet, og varsler hvis RSSI er over terskelen.
     def detectionCallback(device: BLEDevice, advertismentData: AdvertisementData):
         nonlocal target_found
         if device.address.upper() == TARGET.upper():
@@ -34,6 +37,7 @@ async def main():
             elif rssi < RSSI_THRESHOLD and target_found:
                 target_found = False
 
+    # scanner etter bluetooth devices og i while loopen wenter for scan_interval tiden (5sek)
     async with BleakScanner(detectionCallback):
         while True:
             await asyncio.sleep(SCAN_INTERVAL)
